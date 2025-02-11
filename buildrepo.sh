@@ -2,6 +2,7 @@
 set -e 
 set -o pipefail
 
+deps="icoextract patool python-fvs python-pathvalidate python-steamgriddb vkbasalt-cli"
 package_name="lutris-git opengamepadui-bin bottles lgogdownloader gzdoom yay-bin"
 repo_name="edge-repo"
 arch="x86_64"
@@ -12,6 +13,10 @@ else
     echo "Yay is needed to run this script!"
     exit 1
 fi
+
+for pkg in $deps; do
+    yay --builddir "$(pwd)" -S "$pkg" --noconfirm
+done
 
 for pkg in $package_name; do
     yay --builddir "$(pwd)" -S "$pkg" --noconfirm
