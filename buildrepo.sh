@@ -2,7 +2,7 @@
 set -e 
 set -o pipefail
 
-package_name="lutris-git opengamepadui-bin bottles lgogdownloader gzdoom"
+package_name="lutris-git opengamepadui-bin bottles lgogdownloader gzdoom yay-bin"
 repo_name="edge-repo"
 arch="x86_64"
 
