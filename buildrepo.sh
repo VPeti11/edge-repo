@@ -3,7 +3,7 @@ set -e
 set -o pipefail
 
 deps="icoextract patool python-fvs python-pathvalidate python-steamgriddb vkbasalt-cli"
-package_name="lutris-git opengamepadui-bin bottles lgogdownloader gzdoom yay-bin"
+package_name="lutris-git opengamepadui-bin bottles lgogdownloader gzdoom yay-bin  linux-firmware-valve"
 repo_name="edge-repo"
 arch="x86_64"
 
