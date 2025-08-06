@@ -2,8 +2,8 @@
 
 REPO_NAME="edge-repo"
 GITLAB_USERNAME="edgedev1"
-REPO_URL="https://gitlab.com/edgedev1/edge-repo/-/raw/main/x86_64/"
-GPG_KEY_URL="https://gitlab.com/edgedev1/edge-repo/-/raw/main/pub.asc"
+REPO_URL="https://gitlab.com/edgedev1/edge-repo/-/raw/master/x86_64/"
+GPG_KEY_URL="https://gitlab.com/edgedev1/edge-repo/-/raw/master/pub.asc"
 
 cat >> /etc/pacman.conf << EOF
 
