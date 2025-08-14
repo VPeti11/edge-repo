@@ -2,8 +2,8 @@
 set -e 
 set -o pipefail
 
-deps="icoextract patool python-fvs python-pathvalidate python-steamgriddb vkbasalt-cli"
-package_name="lutris-git opengamepadui-bin bottles lgogdownloader gzdoom yay-bin  linux-firmware-valve antimicrox-git balena-etcher coolercontrol-bin betterdiscord-installer-bin flatseal moonlight-qt-bin nexusmods-app-bin peazip-qt-bin polychromatic-git protonup-qt-bin sunshine-bin"
+deps="icoextract patool python-fvs python-pathvalidate python-steamgriddb vkbasalt-cli ckbcomp"
+package_name="lutris-git opengamepadui-bin bottles lgogdownloader gzdoom yay-bin  linux-firmware-valve antimicrox-git balena-etcher coolercontrol-bin betterdiscord-installer-bin flatseal moonlight-qt-bin nexusmods-app-bin peazip-qt-bin polychromatic-git protonup-qt-bin sunshine-bin calamares"
 repo_name="edge-repo"
 arch="x86_64"
 
