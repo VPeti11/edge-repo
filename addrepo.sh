@@ -5,13 +5,12 @@ GITLAB_USERNAME="edgedev1"
 REPO_URL="https://gitlab.com/edgedev1/edge-repo/-/raw/master/x86_64/"
 GPG_KEY_URL="https://gitlab.com/edgedev1/edge-repo/-/raw/master/pub.asc"
 
-cat >> /etc/pacman.conf << EOF
-
-[${REPO_NAME}]
+cat >> /etc/pacman.conf << EOF 
+[edge-repo]
 SigLevel = Required DatabaseOptional
-Server = ${REPO_URL}
+Server = https://gitlab.com/edgedev1/edge-repo/-/raw/master/x86_64/
+Server = https://github.com/VPeti11/edge-repo/raw/refs/heads/master/x86_64/
 EOF
-
 
 echo "Importing GPG key..."
 curl -fsSL ${GPG_KEY_URL} | gpg --dearmor -o /etc/pacman.d/gnupg/${REPO_NAME}-pub.gpg
