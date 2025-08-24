@@ -20,7 +20,7 @@ jobs:
           chown -R builder:builder /home/builder
 
       - name: Install base-devel and git
-        run: pacman -Sy --noconfirm base-devel git
+        run: pacman -Sy --noconfirm base-devel git jq
 
       - name: Clone yay-bin from AUR
         run: su - builder -c 'curl -o PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=yay-bin'
@@ -29,12 +29,30 @@ jobs:
         run: |
           su - builder -c 'cd /home/builder/ && makepkg -si --noconfirm'
 
+      - name: Check if any AUR packages are flagged out-of-date
+        run: |
+          PACKAGES=(
+            prismlauncher lutris-git opengamepadui-bin bottles gzdoom-bin yay-bin
+            antimicrox-git balena-etcher coolercontrol-bin betterdiscord-installer-bin
+            moonlight-qt-bin peazip-qt-bin polychromatic-git protonup-qt-bin sunshine-bin linux-firmware-valve
+          )
+
+          for pkg in "${PACKAGES[@]}"; do
+            echo "Checking $pkg..."
+            OUT_OF_DATE=$(curl -s "https://aur.archlinux.org/rpc/?v=5&type=info&arg=$pkg" | jq '.result.OutOfDate')
+            if [ "$OUT_OF_DATE" != "null" ]; then
+              echo "Package '$pkg' is flagged out-of-date (timestamp: $OUT_OF_DATE)"
+              exit 110
+            fi
+          done
+
       - name: Install AUR packages with yay
         run: |
           su - builder -c 'yay --noconfirm --save --builddir /home/builder/aurbuild -S \
           prismlauncher lutris-git opengamepadui-bin bottles gzdoom-bin yay-bin \
           antimicrox-git balena-etcher coolercontrol-bin betterdiscord-installer-bin \
           moonlight-qt-bin peazip-qt-bin polychromatic-git protonup-qt-bin sunshine-bin linux-firmware-valve'
+
 
 
       - name: Filter and copy non-debug packages
