@@ -2,7 +2,7 @@ name: Install AUR packages and update repo
 
 on:
   schedule:
-    - cron: "0 7 * * 3"
+    - cron: "0 7 * * 3"  # Every Wednesday at 7:00 AM
   workflow_dispatch:
 
 jobs:
@@ -20,24 +20,24 @@ jobs:
           chown -R builder:builder /home/builder
 
       - name: Install base-devel and git
-        run: pacman -Sy --noconfirm base-devel git sudo
+        run: pacman -Sy --noconfirm base-devel git
 
       - name: Clone yay-bin from AUR
-        run: sudo -u builder git clone https://aur.archlinux.org/yay-bin.git /home/builder/yay
+        run: su - builder -c 'git clone https://aur.archlinux.org/yay-bin.git /home/builder/yay'
 
       - name: Build and install yay
         run: |
           cd /home/builder/yay
-          sudo -u builder makepkg -si --noconfirm
+          su - builder -c 'cd /home/builder/yay && makepkg -si --noconfirm'
 
       - name: Configure yay to use custom build directory
         run: |
-          sudo -u builder mkdir -p /home/builder/aurbuild
-          sudo -u builder yay --noconfirm --save --builddir /home/builder/aurbuild
+          su - builder -c 'mkdir -p /home/builder/aurbuild'
+          su - builder -c 'yay --noconfirm --save --builddir /home/builder/aurbuild'
 
       - name: Install AUR packages with yay
         run: |
-          sudo -u builder yay --noconfirm --builddir /home/builder/aurbuild -S \
+          su - builder -c 'yay --noconfirm --builddir /home/builder/aurbuild -S \
             antimicrox-git lutris-git balena-etcher mkinitcpio-openswap \
             betterdiscord-installer-bin moonlight-qt-bin bottles opengamepadui-bin \
             patool coolercontrol-bin peazip-qt-bin \
@@ -45,7 +45,7 @@ jobs:
             python-fvs python-pathvalidate python-steamgriddb \
             sunshine sunshine-bin downgrade electron17-bin trizen gzdoom vkbasalt-cli \
             icoextract lgogdownloader libcprime yay-bin \
-            libcsys zmusic linux-firmware-valve
+            libcsys zmusic linux-firmware-valve'
 
       - name: Filter and copy non-debug packages
         run: |
