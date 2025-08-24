@@ -49,7 +49,7 @@ jobs:
       - name: Install AUR packages with yay
         run: |
           su - builder -c 'yay --noconfirm --save --builddir /home/builder/aurbuild -S \
-          prismlauncher lutris-git opengamepadui-bin bottles gzdoom-bin yay-bin \
+          prismlauncher-git lutris-git opengamepadui-bin bottles gzdoom-bin yay-bin \
           antimicrox-git balena-etcher coolercontrol-bin betterdiscord-installer-bin \
           moonlight-qt-bin peazip-qt-bin polychromatic-git protonup-qt-bin sunshine-bin linux-firmware-valve'
 
