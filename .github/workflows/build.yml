@@ -39,7 +39,7 @@ jobs:
 
           for pkg in "${PACKAGES[@]}"; do
             echo "Checking $pkg..."
-            OUT_OF_DATE=$(curl -s "https://aur.archlinux.org/rpc/?v=5&type=info&arg=calamares" \ | jq '.results[0].OutOfDate')
+            OUT_OF_DATE=$(curl -s "https://aur.archlinux.org/rpc/?v=5&type=info&arg=$pkg" | jq '.results[0].OutOfDate')
             if [ "$OUT_OF_DATE" != "null" ]; then
               echo "Package '$pkg' is flagged out-of-date (timestamp: $OUT_OF_DATE)"
               exit 110
