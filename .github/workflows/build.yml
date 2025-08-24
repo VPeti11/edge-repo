@@ -53,20 +53,30 @@ jobs:
           antimicrox-git balena-etcher coolercontrol-bin betterdiscord-installer-bin \
           moonlight-qt-bin peazip-qt-bin polychromatic-git protonup-qt-bin sunshine-bin linux-firmware-valve'
 
-
-
       - name: Filter and copy non-debug packages
         run: |
           mkdir -p /home/builder/artifacts
           find /home/builder/aurbuild -type f -name '*.pkg.tar.zst' ! -name '*-debug-*.pkg.tar.zst' \
-            -exec cp {} /home/builder/artifacts/ \;
+            -exec cp --dereference {} /home/builder/artifacts/ \;
 
       - name: Rename packages (strip extensions)
         run: |
           cd /home/builder/artifacts
+          shopt -s nullglob
           for f in *.pkg.tar.zst; do
             base=$(echo "$f" | sed 's/-[^-]*-[^-]*\.pkg\.tar\.zst$//')
             mv "$f" "$base.pkg.tar.zst"
+          done
+
+      - name: Sanitize filenames (remove forbidden characters for GitHub Artifacts)
+        run: |
+          cd /home/builder/artifacts
+          for f in *.pkg.tar.zst; do
+            safe=$(echo "$f" | sed 's/[:<>\"|?*]/_/g')
+            if [ "$f" != "$safe" ]; then
+              echo "Renaming $f -> $safe"
+              mv "$f" "$safe"
+            fi
           done
 
       - name: Upload AUR packages
@@ -85,14 +95,14 @@ jobs:
         with:
           ref: staging
 
+      - name: Clean x86_64 directory
+        run: rm -f ./x86_64/*
+
       - name: Download AUR packages
         uses: actions/download-artifact@v4
         with:
           name: aur-packages
           path: ./x86_64
-
-      - name: Clean x86_64 directory
-        run: rm -f ./x86_64/*
 
       - name: Import GPG private key
         run: |
@@ -108,6 +118,15 @@ jobs:
         run: |
           cd x86_64
           repo-add -s -k 53407B947EBAD024A4645885A139E9B289DC7527 edge-repo.db.tar.gz *.pkg.tar.zst
+
+          unlink edge-repo.db
+          unlink edge-repo.db.sig
+          unlink edge-repo.files
+          unlink edge-repo.files.sig
+          mv edge-repo.db.tar.gz edge-repo.db
+          mv edge-repo.db.tar.gz.sig edge-repo.db.sig
+          mv edge-repo.files.tar.gz.sig edge-repo.files.sig
+          mv edge-repo.files.tar.gz edge-repo.files
 
       - name: Sign packages
         run: |
