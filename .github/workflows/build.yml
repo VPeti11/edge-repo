@@ -29,14 +29,9 @@ jobs:
         run: |
           su - builder -c 'cd /home/builder/ && makepkg -si --noconfirm'
 
-      - name: Configure yay to use custom build directory
-        run: |
-          su - builder -c 'mkdir -p /home/builder/aurbuild'
-          su - builder -c 'yay --noconfirm --save --builddir /home/builder/aurbuild'
-
       - name: Install AUR packages with yay
         run: |
-          su - builder -c 'yay --noconfirm --builddir /home/builder/aurbuild -S \
+          su - builder -c 'yay --noconfirm --save --builddir /home/builder/aurbuild -S \
             antimicrox-git lutris-git balena-etcher mkinitcpio-openswap \
             betterdiscord-installer-bin moonlight-qt-bin bottles opengamepadui-bin \
             patool coolercontrol-bin peazip-qt-bin \
