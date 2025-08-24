@@ -58,7 +58,7 @@ jobs:
       - name: Filter and copy non-debug packages
         run: |
           mkdir -p /home/builder/artifacts
-          find /home/builder/aurbuild -maxdepth 1 -type f -name '*.pkg.tar.zst' ! -name '*-debug-*.pkg.tar.zst' \
+          find /home/builder/aurbuild -type f -name '*.pkg.tar.zst' ! -name '*-debug-*.pkg.tar.zst' \
             -exec cp {} /home/builder/artifacts/ \;
 
       - name: Rename packages (strip extensions)
