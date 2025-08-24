@@ -23,12 +23,11 @@ jobs:
         run: pacman -Sy --noconfirm base-devel git
 
       - name: Clone yay-bin from AUR
-        run: su - builder -c 'git clone https://aur.archlinux.org/yay-bin.git /home/builder/yay'
+        run: su - builder -c 'curl -o PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=yay-bin'
 
       - name: Build and install yay
         run: |
-          cd /home/builder/yay
-          su - builder -c 'cd /home/builder/yay && makepkg -si --noconfirm'
+          su - builder -c 'cd /home/builder/ && makepkg -si --noconfirm'
 
       - name: Configure yay to use custom build directory
         run: |
