@@ -32,7 +32,7 @@ jobs:
       - name: Check if any AUR packages are flagged out-of-date
         run: |
           PACKAGES=(
-            prismlauncher lutris-git opengamepadui-bin bottles gzdoom-bin yay-bin
+            prismlauncher-git lutris-git opengamepadui-bin bottles gzdoom-bin yay-bin
             antimicrox-git balena-etcher coolercontrol-bin betterdiscord-installer-bin
             moonlight-qt-bin peazip-qt-bin polychromatic-git protonup-qt-bin sunshine-bin linux-firmware-valve
           )
