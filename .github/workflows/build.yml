@@ -43,7 +43,7 @@ jobs:
             patool coolercontrol-bin peazip-qt-bin \
             coolercontrold-bin polychromatic-git protonup-qt-bin \
             python-fvs python-pathvalidate python-steamgriddb \
-            sunshine sunshine-bin downgrade electron17-bin trizen gzdoom vkbasalt-cli \
+            sunshine-bin downgrade electron17-bin trizen gzdoom-bin vkbasalt-cli \
             icoextract lgogdownloader libcprime yay-bin \
             libcsys zmusic linux-firmware-valve'
 
