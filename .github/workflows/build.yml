@@ -32,9 +32,9 @@ jobs:
       - name: Check if any AUR packages are flagged out-of-date
         run: |
           PACKAGES=(
-            lutris-git opengamepadui-bin bottles gzdoom-bin yay-bin
-            antimicrox-git balena-etcher coolercontrol-bin betterdiscord-installer-bin
-            moonlight-qt-bin peazip-qt-bin polychromatic-git protonup-qt-bin sunshine-bin linux-firmware-valve
+            lutris-git opengamepadui-git bottles gzdoom yay
+            antimicrox-git  etcher-git coolercontrol betterdiscord-installer
+            moonlight-qt-git peazip polychromatic-git protonup-qt sunshine linux-firmware-valve
           )
 
           for pkg in "${PACKAGES[@]}"; do
@@ -48,16 +48,20 @@ jobs:
 
       - name: Install AUR packages with yay
         run: |
-          su - builder -c 'yay --noconfirm --save --builddir /home/builder/aurbuild -S \
-          lutris-git opengamepadui-bin bottles gzdoom-bin yay-bin \
-          antimicrox-git balena-etcher coolercontrol-bin betterdiscord-installer-bin \
-          moonlight-qt-bin peazip-qt-bin polychromatic-git protonup-qt-bin sunshine-bin linux-firmware-valve'
+          su - builder -c 'yay --noconfirm --save --builddir /home/builder/aurbuild --mflags -c -S \
+          lutris-git opengamepadui-git bottles gzdoom yay \
+          antimicrox-git etcher-git coolercontrol betterdiscord-installer \
+          moonlight-qt-git peazip polychromatic-git protonup-qt sunshine linux-firmware-valve'
 
       - name: Filter and copy non-debug packages
         run: |
           mkdir -p /home/builder/artifacts
-          find /home/builder/aurbuild -type f -name '*.pkg.tar.zst' ! -name '*-debug-*.pkg.tar.zst' \
-            -exec cp --dereference {} /home/builder/artifacts/ \;
+          pkgs=$(find /home/builder/aurbuild -type f -name '*.pkg.tar.zst' ! -name '*-debug-*.pkg.tar.zst')
+          if [ -z "$pkgs" ]; then
+            echo "No non-debug packages found."
+            exit 111
+          fi
+          cp --dereference $pkgs /home/builder/artifacts/
 
       - name: Rename packages (strip extensions)
         run: |
