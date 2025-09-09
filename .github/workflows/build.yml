@@ -2,7 +2,7 @@ name: Install AUR packages and update repo
 
 on:
   schedule:
-    - cron: "0 7 * * 3"  # Every Wednesday at 7:00 AM
+    - cron: "0 5 * * 5"  # Every Wednesday at 7:00 AM
   workflow_dispatch:
 
 jobs:
