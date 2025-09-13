@@ -2,7 +2,7 @@ name: Install AUR packages and update repo
 
 on:
   schedule:
-    - cron: "0 5 * * 5"  # Every Wednesday at 7:00 AM
+    - cron: "0 5 * * 5"  # Every Friday at 5:00 AM
   workflow_dispatch:
 
 jobs:
@@ -46,48 +46,54 @@ jobs:
             fi
           done
 
-      - name: Install AUR packages with yay
+      - name: Install AUR packages individually
         run: |
-          su - builder -c 'yay --noconfirm --save --builddir /home/builder/aurbuild --mflags -c -S \
-          lutris-git opengamepadui-git bottles gzdoom yay \
-          antimicrox-git ventoy-bin coolercontrol betterdiscord-installer \
-          moonlight-qt-git peazip polychromatic-git protonup-qt sunshine linux-firmware-valve'
+          PACKAGES=(
+            lutris-git opengamepadui-git bottles gzdoom yay
+            antimicrox-git ventoy-bin coolercontrol betterdiscord-installer
+            moonlight-qt-git peazip polychromatic-git protonup-qt sunshine linux-firmware-valve
+          )
 
-      - name: Filter and copy non-debug packages
-        run: |
           mkdir -p /home/builder/artifacts
-          pkgs=$(find /home/builder/aurbuild -type f -name '*.pkg.tar.zst' ! -name '*-debug-*.pkg.tar.zst')
-          if [ -z "$pkgs" ]; then
-            echo "No non-debug packages found."
-            exit 111
-          fi
-          cp --dereference $pkgs /home/builder/artifacts/
 
-      - name: Rename packages (strip extensions)
+          for pkg in "${PACKAGES[@]}"; do
+            echo "Building package: $pkg"
+            su - builder -c "yay --noconfirm --save --builddir /home/builder/aurbuild --mflags -c -S $pkg"
+
+            # copy built non-debug packages
+            built_pkg=$(find /home/builder/aurbuild -maxdepth 1 -type f -name "$pkg-*.pkg.tar.zst" ! -name '*-debug-*.pkg.tar.zst')
+            if [ -n "$built_pkg" ]; then
+              cp --dereference $built_pkg /home/builder/artifacts/
+            else
+              echo "Warning: No non-debug package found for $pkg"
+            fi
+          done
+
+      - name: Sanitize and rename packages
         run: |
           cd /home/builder/artifacts
           shopt -s nullglob
           for f in *.pkg.tar.zst; do
+            # Strip version/release numbers
             base=$(echo "$f" | sed 's/-[^-]*-[^-]*\.pkg\.tar\.zst$//')
-            mv "$f" "$base.pkg.tar.zst"
-          done
-
-      - name: Sanitize filenames (remove forbidden characters for GitHub Artifacts)
-        run: |
-          cd /home/builder/artifacts
-          for f in *.pkg.tar.zst; do
-            safe=$(echo "$f" | sed 's/[:<>\"|?*]/_/g')
+            # Remove forbidden characters for GitHub artifacts
+            safe=$(echo "$base.pkg.tar.zst" | sed 's/[:<>\"|?*]/_/g')
             if [ "$f" != "$safe" ]; then
               echo "Renaming $f -> $safe"
               mv "$f" "$safe"
             fi
           done
 
-      - name: Upload AUR packages
-        uses: actions/upload-artifact@v4
-        with:
-          name: aur-packages
-          path: /home/builder/artifacts/*.pkg.tar.zst
+      - name: Upload each package individually
+        run: |
+          cd /home/builder/artifacts
+          shopt -s nullglob
+          for f in *.pkg.tar.zst; do
+            echo "Uploading $f"
+            gh actions upload-artifact --name "$f" --path "$f"
+          done
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   update-repo:
     runs-on: ubuntu-latest
@@ -102,7 +108,7 @@ jobs:
       - name: Download AUR packages
         uses: actions/download-artifact@v4
         with:
-          name: aur-packages
+          name: '*'
           path: ./x86_64
 
       - name: Import GPG private key
