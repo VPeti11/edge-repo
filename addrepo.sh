@@ -1,16 +1,38 @@
 #!/bin/bash
 
 REPO_NAME="edge-repo"
-GITLAB_USERNAME="edgedev1"
-REPO_URL="https://gitlab.com/edgedev1/edge-repo/-/raw/master/x86_64/"
-GPG_KEY_URL="https://gitlab.com/edgedev1/edge-repo/-/raw/master/pub.asc"
+GITLAB_USERNAME="VPeti11"
 
-cat >> /etc/pacman.conf << EOF 
+# Default URLs (master branch)
+REPO_URL_GITLAB="https://gitlab.com/edgedev1/edge-repo/-/raw/master/x86_64/"
+REPO_URL_GITHUB="https://github.com/VPeti11/edge-repo/raw/refs/heads/master/x86_64/"
+# GPG key always from master
+GPG_KEY_URL="https://github.com/VPeti11/edge-repo/-/raw/master/pub.asc"
+
+echo -n "Do you want to enable staging repos? (y/N): "
+read -r enable_staging
+
+if [[ "$enable_staging" =~ ^[Yy]$ ]]; then
+    echo "Using staging repos..."
+    REPO_CONF=$(cat <<EOF
 [edge-repo]
 SigLevel = Required DatabaseOptional
-Server = https://gitlab.com/edgedev1/edge-repo/-/raw/master/x86_64/
-Server = https://github.com/VPeti11/edge-repo/raw/refs/heads/master/x86_64/
+Server = https://github.com/VPeti11/edge-repo/raw/refs/heads/staging/x86_64/
 EOF
+)
+else
+    echo "Using stable repos..."
+    REPO_CONF=$(cat <<EOF
+[edge-repo]
+SigLevel = Required DatabaseOptional
+Server = ${REPO_URL_GITLAB}
+Server = ${REPO_URL_GITHUB}
+EOF
+)
+fi
+
+# Append repo config
+cat >> /etc/pacman.conf <<< "$REPO_CONF"
 
 echo "Importing GPG key..."
 curl -fsSL ${GPG_KEY_URL} | gpg --dearmor -o /etc/pacman.d/gnupg/${REPO_NAME}-pub.gpg
