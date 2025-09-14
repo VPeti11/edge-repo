@@ -46,7 +46,7 @@ jobs:
             fi
           done
 
-      - name: Install AUR packages individually
+      - name: Install AUR packages with dependencies
         run: |
           PACKAGES=(
             lutris-git opengamepadui-git bottles gzdoom yay
@@ -57,30 +57,19 @@ jobs:
           mkdir -p /home/builder/artifacts
 
           for pkg in "${PACKAGES[@]}"; do
-            echo "Building package: $pkg"
-            if [ "$pkg" = "sunshine" ]; then
-              su - builder -c "cd /home/builder/aurbuild/sunshine && makepkg -si --noconfirm --clean"
-            else
-              su - builder -c "yay --noconfirm --save --builddir /home/builder/aurbuild --mflags -c -S $pkg"
-            fi
-
-            # copy built non-debug packages
-            built_pkg=$(find /home/builder/aurbuild -maxdepth 2 -type f -name "$pkg-*.pkg.tar.zst" ! -name '*-debug-*.pkg.tar.zst')
-            if [ -n "$built_pkg" ]; then
-              cp --dereference $built_pkg /home/builder/artifacts/
-            else
-              echo "Warning: No non-debug package found for $pkg"
-            fi
+            echo "Installing $pkg with dependencies..."
+            su - builder -c "yay --noconfirm --save --builddir /home/builder/aurbuild --mflags --noclean --nodiff --answerclean None --answerdiff None -S $pkg"
           done
+
+          # Copy all built non-debug packages (including dependencies)
+          find /home/builder/aurbuild -type f -name "*.pkg.tar.zst" ! -name "*-debug-*.pkg.tar.zst" -exec cp --dereference {} /home/builder/artifacts/ \;
 
       - name: Sanitize and rename packages
         run: |
           cd /home/builder/artifacts
           shopt -s nullglob
           for f in *.pkg.tar.zst; do
-            # Strip version/release numbers
             base=$(echo "$f" | sed 's/-[^-]*-[^-]*\.pkg\.tar\.zst$//')
-            # Remove forbidden characters for GitHub artifacts
             safe=$(echo "$base.pkg.tar.zst" | sed 's/[:<>\"|?*]/_/g')
             if [ "$f" != "$safe" ]; then
               echo "Renaming $f -> $safe"
@@ -109,7 +98,6 @@ jobs:
         with:
           name: aur-packages
           path: ./x86_64
-
 
       - name: Import GPG private key
         run: echo "$GPG_PRIVATE_KEY" | gpg --batch --import
@@ -162,7 +150,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: staging
-          
+
       - name: Remove existing x86_64 folder
         run: rm -rf ./x86_64
 
