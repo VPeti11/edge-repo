@@ -29,23 +29,12 @@ jobs:
         run: |
           su - builder -c 'cd /home/builder/ && makepkg -si --noconfirm'
 
-      - name: Patch sunshine PKGBUILD
-        run: |
-          su - builder -c '
-            mkdir -p /home/builder/aurbuild/sunshine
-            cd /home/builder/aurbuild/sunshine
-            curl -o PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=sunshine
-            curl -o sunshine.install https://aur.archlinux.org/cgit/aur.git/plain/sunshine.install?h=sunshine
-            # Force-disable CUDA in cmake
-            sed -i "s|cmake .*|cmake -S \"\$pkgname\" -B build -DSUNSHINE_ENABLE_CUDA=OFF -DCUDA_FAIL_ON_MISSING=OFF -DBUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=/usr -D SUNSHINE_EXECUTABLE_PATH=/usr/bin/sunshine -D SUNSHINE_ASSETS_DIR=share/sunshine|" PKGBUILD
-          '
-
       - name: Check if any AUR packages are flagged out-of-date
         run: |
           PACKAGES=(
             lutris-git opengamepadui-git bottles gzdoom yay
             antimicrox-git ventoy-bin coolercontrol betterdiscord-installer
-            moonlight-qt-git peazip polychromatic-git protonup-qt sunshine linux-firmware-valve
+            moonlight-qt-git peazip polychromatic-git protonup-qt sunshine-beta-bin linux-firmware-valve
           )
 
           for pkg in "${PACKAGES[@]}"; do
@@ -62,7 +51,7 @@ jobs:
           PACKAGES=(
             lutris-git opengamepadui-git bottles gzdoom yay
             antimicrox-git ventoy-bin coolercontrol betterdiscord-installer
-            moonlight-qt-git peazip polychromatic-git protonup-qt sunshine linux-firmware-valve
+            moonlight-qt-git peazip polychromatic-git protonup-qt sunshine-beta-bin linux-firmware-valve
           )
 
           mkdir -p /home/builder/artifacts
