@@ -107,8 +107,9 @@ jobs:
       - name: Download AUR packages
         uses: actions/download-artifact@v4
         with:
-          name: '*'
+          name: aur-packages
           path: ./x86_64
+
 
       - name: Import GPG private key
         run: echo "$GPG_PRIVATE_KEY" | gpg --batch --import
