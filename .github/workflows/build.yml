@@ -58,7 +58,7 @@ jobs:
 
           for pkg in "${PACKAGES[@]}"; do
             echo "Installing $pkg with dependencies..."
-            su - builder -c "yay --noconfirm --save --builddir /home/builder/aurbuild --mflags --noclean --nodiff --answerclean None --answerdiff None -S $pkg"
+            su - builder -c "yay --noconfirm --save --builddir /home/builder/aurbuild -S $pkg"
           done
 
           # Copy all built non-debug packages (including dependencies)
