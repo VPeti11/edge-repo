@@ -88,16 +88,11 @@ jobs:
             fi
           done
 
-      - name: Upload each package individually
-        run: |
-          cd /home/builder/artifacts
-          shopt -s nullglob
-          for f in *.pkg.tar.zst; do
-            echo "Uploading $f"
-            gh actions upload-artifact --name "$f" --path "$f"
-          done
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload AUR packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: aur-packages
+          path: /home/builder/artifacts/*.pkg.tar.zst
 
   update-repo:
     runs-on: ubuntu-latest
