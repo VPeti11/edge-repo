@@ -29,6 +29,16 @@ jobs:
         run: |
           su - builder -c 'cd /home/builder/ && makepkg -si --noconfirm'
 
+      - name: Patch sunshine PKGBUILD
+        run: |
+          su - builder -c '
+            mkdir -p /home/builder/aurbuild/sunshine
+            cd /home/builder/aurbuild/sunshine
+            curl -o PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=sunshine
+            # Force-disable CUDA in cmake
+            sed -i "s|cmake .*|cmake -S \"\$pkgname\" -B build -DSUNSHINE_ENABLE_CUDA=OFF -DCUDA_FAIL_ON_MISSING=OFF -DBUILD_TESTS=OFF -DCMAKE_INSTALL_PREFIX=/usr -D SUNSHINE_EXECUTABLE_PATH=/usr/bin/sunshine -D SUNSHINE_ASSETS_DIR=share/sunshine|" PKGBUILD
+          '
+
       - name: Check if any AUR packages are flagged out-of-date
         run: |
           PACKAGES=(
@@ -58,10 +68,14 @@ jobs:
 
           for pkg in "${PACKAGES[@]}"; do
             echo "Building package: $pkg"
-            su - builder -c "yay --noconfirm --save --builddir /home/builder/aurbuild --mflags -c -S $pkg"
+            if [ "$pkg" = "sunshine" ]; then
+              su - builder -c "cd /home/builder/aurbuild/sunshine && makepkg -si --noconfirm --clean"
+            else
+              su - builder -c "yay --noconfirm --save --builddir /home/builder/aurbuild --mflags -c -S $pkg"
+            fi
 
             # copy built non-debug packages
-            built_pkg=$(find /home/builder/aurbuild -maxdepth 1 -type f -name "$pkg-*.pkg.tar.zst" ! -name '*-debug-*.pkg.tar.zst')
+            built_pkg=$(find /home/builder/aurbuild -maxdepth 2 -type f -name "$pkg-*.pkg.tar.zst" ! -name '*-debug-*.pkg.tar.zst')
             if [ -n "$built_pkg" ]; then
               cp --dereference $built_pkg /home/builder/artifacts/
             else
