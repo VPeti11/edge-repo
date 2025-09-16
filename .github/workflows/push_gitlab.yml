@@ -42,9 +42,10 @@ jobs:
           git checkout -b staging
         fi
 
-        # Clean and copy new contents
-        rm -rf *
-        cp -r ../* ./
+        cd ..
+        rsync -av --exclude=gitlab-mirror ./ gitlab-mirror/
+        cd gitlab-mirror
+
 
         git add .
         if git diff --cached --quiet; then
