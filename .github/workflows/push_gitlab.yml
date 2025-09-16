@@ -1,0 +1,55 @@
+name: Mirror staging edge-repo to GitLab
+
+on:
+  push:
+    branches:
+      - staging
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout GitHub repo
+      uses: actions/checkout@v3
+
+    - name: Extract GitHub commit info
+      id: commit_info
+      run: |
+        echo "author_name=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
+        echo "author_email=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
+        echo "commit_msg<<EOF" >> $GITHUB_OUTPUT
+        git log -1 --pretty=format:'%B' >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
+
+    - name: Set up Git config
+      run: |
+        git config --global user.name "${{ steps.commit_info.outputs.author_name }}"
+        git config --global user.email "${{ steps.commit_info.outputs.author_email }}"
+
+    - name: Clone GitLab repo and push to staging branch
+      env:
+        GITLAB_TOKEN: ${{ secrets.GITLAB_TOKEN }}
+      run: |
+        git clone https://oauth2:${GITLAB_TOKEN}@gitlab.com/edgedev1/edge-repo.git gitlab-mirror
+        cd gitlab-mirror
+
+        # Check out or create 'staging' branch
+        if git ls-remote --exit-code --heads origin staging; then
+          git checkout staging
+        else
+          git checkout -b staging
+        fi
+
+        # Clean and copy new contents
+        rm -rf *
+        cp -r ../* ./
+
+        git add .
+        if git diff --cached --quiet; then
+          echo "No changes to commit"
+        else
+          git commit -m "${{ steps.commit_info.outputs.commit_msg }}"
+          git push origin staging
+        fi
