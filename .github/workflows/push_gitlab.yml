@@ -11,22 +11,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout GitHub repo
+    - name: Always checkout GitHub staging branch
       uses: actions/checkout@v3
+      with:
+        ref: staging
 
-    - name: Extract GitHub commit info
+    - name: Extract latest GitHub commit message
       id: commit_info
       run: |
-        echo "author_name=$(git log -1 --pretty=format:'%an')" >> $GITHUB_OUTPUT
-        echo "author_email=$(git log -1 --pretty=format:'%ae')" >> $GITHUB_OUTPUT
         echo "commit_msg<<EOF" >> $GITHUB_OUTPUT
         git log -1 --pretty=format:'%B' >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
 
-    - name: Set up Git config
+    - name: Set up Git config with Mirror Bot identity
       run: |
-        git config --global user.name "${{ steps.commit_info.outputs.author_name }}"
-        git config --global user.email "${{ steps.commit_info.outputs.author_email }}"
+        git config --global user.name "GitLab Mirror Bot"
+        git config --global user.email "mirror-bot@edgedev1.gitlab"
 
     - name: Clone GitLab repo and push to staging branch
       env:
