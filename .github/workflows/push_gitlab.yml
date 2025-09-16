@@ -43,7 +43,7 @@ jobs:
         fi
 
         cd ..
-        rsync -av --exclude=gitlab-mirror ./ gitlab-mirror/
+        rsync -av x86_64/ gitlab-mirror/x86_64/
         cd gitlab-mirror
 
 
