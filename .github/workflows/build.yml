@@ -1,4 +1,4 @@
-name: Install AUR packages and update repo
+name: Update staging edge-repo
 
 on:
   schedule:
