@@ -32,7 +32,7 @@ jobs:
       - name: Check if any AUR packages are flagged out-of-date
         run: |
           PACKAGES=(
-            lutris-git opengamepadui-git bottles gzdoom yay
+            lutris-git bottles gzdoom yay
             antimicrox-git ventoy-bin coolercontrol betterdiscord-installer
             moonlight-qt-git peazip polychromatic-git protonup-qt sunshine-beta-bin linux-firmware-valve
           )
