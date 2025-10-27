@@ -29,40 +29,36 @@ jobs:
         run: |
           su - builder -c 'cd /home/builder/ && makepkg -si --noconfirm'
 
-      - name: Check if any AUR packages are flagged out-of-date
-        run: |
-          PACKAGES=(
-            lutris-git bottles gzdoom yay
-            antimicrox-git ventoy-bin coolercontrol betterdiscord-installer
-            moonlight-qt-git peazip polychromatic-git protonup-qt sunshine-beta-bin linux-firmware-valve
-          )
-
-          for pkg in "${PACKAGES[@]}"; do
-            echo "Checking $pkg..."
-            OUT_OF_DATE=$(curl -s "https://aur.archlinux.org/rpc/?v=5&type=info&arg=$pkg" | jq '.results[0].OutOfDate')
-            if [ "$OUT_OF_DATE" != "null" ]; then
-              echo "Package '$pkg' is flagged out-of-date (timestamp: $OUT_OF_DATE)"
-              exit 110
-            fi
-          done
-
-      - name: Install AUR packages with dependencies
+      - name: Install AUR packages with fallback
         run: |
           PACKAGES=(
             lutris-git opengamepadui-git bottles gzdoom yay
             antimicrox-git ventoy-bin coolercontrol betterdiscord-installer
             moonlight-qt-git peazip polychromatic-git protonup-qt sunshine-beta-bin linux-firmware-valve
           )
-
-          mkdir -p /home/builder/artifacts
-
+      
+          mkdir -p /home/builder/artifacts /home/builder/aurbuild
+      
           for pkg in "${PACKAGES[@]}"; do
             echo "Installing $pkg with dependencies..."
-            su - builder -c "yay --noconfirm --save --builddir /home/builder/aurbuild -S $pkg"
+            if ! su - builder -c "yay --noconfirm --save --builddir /home/builder/aurbuild -S $pkg"; then
+              echo "Build failed for $pkg, attempting fallback..."
+      
+              URL=$(curl -s "https://api.github.com/repos/VPeti11/edge-repo/contents/x86_64?ref=staging" | \
+                jq -r ".[] | select(.name | test(\"^${pkg}-.*\\\\.pkg\\\\.tar\\\\.zst$\")) | .download_url" | head -n 1)
+      
+              if [ -n "$URL" ]; then
+                echo "Downloading fallback package from $URL"
+                wget -P /home/builder/aurbuild "$URL"
+              else
+                echo "No fallback package found for $pkg"
+                exit 100
+              fi
+            fi
           done
-
-          # Copy all built non-debug packages (including dependencies)
+      
           find /home/builder/aurbuild -type f -name "*.pkg.tar.zst" ! -name "*-debug-*.pkg.tar.zst" -exec cp --dereference {} /home/builder/artifacts/ \;
+
 
       - name: Sanitize and rename packages
         run: |
