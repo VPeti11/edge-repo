@@ -21,14 +21,14 @@ jobs:
 
       - name: Install base-devel and git
         run: pacman -Sy --noconfirm base-devel git jq wget dos2unix
-
+        
       - name: Clone yay-bin from AUR
-        run: su - builder -c 'curl -o PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=yay'
-
+        run: su - builder -c 'cd /home/builder && curl -o PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=yay'
+      
       - name: Build and install yay
         run: |
-          dos2unix PKGBUILD
-          su - builder -c 'cd /home/builder/ && makepkg -si --noconfirm'
+          su - builder -c 'cd /home/builder && dos2unix PKGBUILD && makepkg -si --noconfirm'
+
 
       - name: Install AUR packages with fallback
         run: |
