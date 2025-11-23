@@ -20,7 +20,7 @@ jobs:
           chown -R builder:builder /home/builder
 
       - name: Install base-devel and git
-        run: pacman -Sy --noconfirm base-devel git jq
+        run: pacman -Sy --noconfirm base-devel git jq wget
 
       - name: Clone yay-bin from AUR
         run: su - builder -c 'curl -o PKGBUILD https://aur.archlinux.org/cgit/aur.git/plain/PKGBUILD?h=yay'
